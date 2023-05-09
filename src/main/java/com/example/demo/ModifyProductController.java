@@ -1,5 +1,7 @@
+/**
+ * Controller class for the modification of Products
+ */
 package com.example.demo;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -38,20 +40,38 @@ public class ModifyProductController implements Initializable {
     @FXML public TextField modifyPrice;
     @FXML public TextField modifyMax;
     @FXML public TextField modifyMin;
+
+    /**
+     * blank product to be modified
+     */
     private static Product modifyMeProduct;
 
+    /**
+     * copies product selected in the Main product table into the blank product instantiated on this controller
+     * @param product
+     */
     public static void addToModify(Product product){
         modifyMeProduct = product;
     }
 
+    /**
+     * return to main controller
+     * @param event
+     * @throws IOException
+     */
     public void toMain(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("MainMenu.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("MainMenu.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 400);
         Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
         window.setScene(scene);
         window.show();
     }
 
+    /**
+     * searches all parts inventory for parts that can be added to the product being modified
+     * @param searchTerm
+     * @return
+     */
     public ObservableList<Part> searchPartsList(String searchTerm){
         ObservableList<Part> searchedPartList = FXCollections.observableArrayList();
 
@@ -65,17 +85,26 @@ public class ModifyProductController implements Initializable {
         return searchedPartList;
     }
 
-    public Part getPartByID(int idNumber){
+    /**
+     * searches parts by ID
+     * @param idNumber
+     * @return
+     */
+    public Part getPartByID(int idNumber) {
         ObservableList<Part> allPartsSearch = Inventory.getAllParts();
 
-        for(Part part: allPartsSearch) {
-            if(part.getId() == idNumber){
+        for (Part part : allPartsSearch) {
+            if (part.getId() == idNumber) {
                 return part;
             }
         }
         return null;
     }
-    //calls function to search parts list
+
+    /**
+     * calls function to search parts list
+     * @param actionEvent
+     */
     public void getResultsHander(ActionEvent actionEvent){
         String q = queryPartTF.getText();
 
@@ -96,6 +125,12 @@ public class ModifyProductController implements Initializable {
         allPartTable.setItems(partsSearchList);
         queryPartTF.setText("");
     }
+
+    /**
+     * Saves the modifications to the product into the product inventory
+     * @param actionEvent
+     * @throws IOException
+     */
     public void modifyProductSaveButton(ActionEvent actionEvent) throws IOException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("Select \"OK\" to confirm");
@@ -110,7 +145,7 @@ public class ModifyProductController implements Initializable {
                     product.setPrice(Double.parseDouble(modifyPrice.getText()));
                     product.setMax(Integer.parseInt(modifyMax.getText()));
                     product.setMin(Integer.parseInt(modifyMin.getText()));
-                    product.setProductPartsList(modifyMeProduct.getProductPartsList());
+                    product.setProductPartsList(modifyMeProduct.getAllAssociatedParts());
 
                 }
             }
@@ -121,17 +156,36 @@ public class ModifyProductController implements Initializable {
 
     }
 
+    /**
+     * adds selected part to the product's associated parts list
+     */
     public void addPartToProduct(){
         Part modifyPart = (Part) allPartTable.getSelectionModel().getSelectedItem();
 
-        modifyMeProduct.addPart(modifyPart);
+        modifyMeProduct.addAssociatedPart(modifyPart);
     }
 
-    public void removePartFromProduct(){
-        Part modifyPart = (Part) productPartTable.getSelectionModel().getSelectedItem();
-        modifyMeProduct.removePart(modifyPart);
+    /**
+     * removes selected part from the product's associated parts list
+     */
+    public void removePartFromProduct() {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("Select \"OK\" to confirm");
+        alert.setTitle("Confirm");
+        alert.setContentText("Are you sure you want to remove the part from the product?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            Part modifyPart = (Part) productPartTable.getSelectionModel().getSelectedItem();
+            modifyMeProduct.deleteAssociatedPart(modifyPart);
+        }
 
     }
+
+    /**
+     * initializes parts tables and fills in text fields with data from the Product that is to be modified
+
+     */
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -149,7 +203,7 @@ public class ModifyProductController implements Initializable {
         modifyMax.setText(Integer.toString(modifyMeProduct.getMax()));
         modifyMin.setText(Integer.toString(modifyMeProduct.getMin()));
 
-        productPartTable.setItems(modifyMeProduct.getProductPartsList());
+        productPartTable.setItems(modifyMeProduct.getAllAssociatedParts());
         prodid.setCellValueFactory(new PropertyValueFactory<>("id"));
         prodname.setCellValueFactory(new PropertyValueFactory<>("name"));
         prodprice.setCellValueFactory(new PropertyValueFactory<>("price"));

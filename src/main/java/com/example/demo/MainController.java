@@ -1,6 +1,9 @@
-package com.example.demo;
+/**
+ *Class for the main page controller corresponding to MainMenu.fxml
+ *
+ */
 
-import javafx.collections.FXCollections;
+package com.example.demo;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -18,9 +21,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class HelloController implements Initializable {
+public class MainController implements Initializable {
 
-    //int id, String name, double price, int stock, int min, int max)
     @FXML public TableView partTable;
     @FXML public AnchorPane scenePane;
 
@@ -41,6 +43,11 @@ public class HelloController implements Initializable {
 
     public Product modifyProduct;
 
+    /**
+     * Changes the scene to a blank Add part form where users can add new parts
+     * @param event
+     * @throws IOException
+     */
     public void goToAddPartButtonPushed(ActionEvent event) throws IOException {
         Parent addPartParent = FXMLLoader.load(getClass().getResource("AddPart.fxml"));
         Scene addPartScene = new Scene(addPartParent);
@@ -51,6 +58,12 @@ public class HelloController implements Initializable {
         window.show();
 
     }
+
+    /**
+     * Changes the scene to a blank Add Product form where users can add new Products
+     * @param event
+     * @throws IOException
+     */
     public void goToAddProductButtonPushed(ActionEvent event) throws IOException {
         Parent addPartParent = FXMLLoader.load(getClass().getResource("AddProduct.fxml"));
         Scene addPartScene = new Scene(addPartParent);
@@ -61,6 +74,12 @@ public class HelloController implements Initializable {
         window.show();
 
     }
+
+    /**
+     * Changes the scene to a Modify part form where the highlighted Part is copied and can be modified
+     * @param event
+     * @throws IOException
+     */
 
     public void goToModifyPartButtonPushed(ActionEvent event) throws IOException {
         modifyPart = (Part) partTable.getSelectionModel().getSelectedItem();
@@ -74,10 +93,13 @@ public class HelloController implements Initializable {
 
         window.setScene(addPartScene);
         window.show();
-
-
     }
 
+    /**
+     * Changes the scene to a Modify Product form where the highlighted Product is copied and can be modified
+     * @param event
+     * @throws IOException
+     */
     public void goToModifyProductButtonPushed(ActionEvent event) throws IOException {
         modifyProduct = (Product) productTable.getSelectionModel().getSelectedItem();
 
@@ -86,7 +108,7 @@ public class HelloController implements Initializable {
         Parent addPartParent = FXMLLoader.load(getClass().getResource("ModifyProduct.fxml"));
         Scene addPartScene = new Scene(addPartParent);
         // This line gets the stage info
-        Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
 
         window.setScene(addPartScene);
         window.show();
@@ -94,64 +116,20 @@ public class HelloController implements Initializable {
 
     }
 
-    public ObservableList<Part> searchPartsList(String searchTerm){
-        ObservableList<Part> searchedPartList = FXCollections.observableArrayList();
-
-        ObservableList<Part> allPartsSearch = Inventory.getAllParts();
-
-        for(Part part: allPartsSearch) {
-            if(part.getName().contains(searchTerm)){
-                searchedPartList.add(part);
-            }
-        }
-
-        return searchedPartList;
-
-    }
-    public ObservableList<Product> searchProductsList(String searchTerm){
-        ObservableList<Product> searchedProductList = FXCollections.observableArrayList();
-
-        ObservableList<Product> allProductsSearch = Inventory.getAllProducts();
-
-        for(Product product: allProductsSearch) {
-            if(product.getName().contains(searchTerm)){
-                searchedProductList.add(product);
-            }
-        }
-        return searchedProductList;
-    }
-
-    public Part getPartByID(int idNumber){
-        ObservableList<Part> allPartsSearch = Inventory.getAllParts();
-
-        for(Part part: allPartsSearch) {
-            if(part.getId() == idNumber){
-                return part;
-            }
-        }
-        return null;
-    }
-    public Product getProductByID(int idNumber){
-        ObservableList<Product> allProductSearch = Inventory.getAllProducts();
-
-        for(Product product: allProductSearch) {
-            if(product.getId() == idNumber){
-                return product;
-            }
-        }
-        return null;
-    }
-
-    //calls function to search parts list
+    /**
+     * Calls inventory methods that search the parts list for a part that contains a search term entered by the user.
+     * The parts table is changed to include only relevant parts
+     * @param actionEvent
+     */
     public void getResultsHander(ActionEvent actionEvent){
         String q = queryTF.getText();
 
-        ObservableList<Part> partsSearchList = searchPartsList(q);
+        ObservableList<Part> partsSearchList = Inventory.lookupPart(q);
 
         if(partsSearchList.size()== 0) {
             try {
                 int partSearchID = Integer.parseInt(q);
-                Part p = getPartByID(partSearchID);
+                Part p = Inventory.lookupPart(partSearchID);
                 if (p != null) {
                     partsSearchList.add(p);
                 }
@@ -165,15 +143,21 @@ public class HelloController implements Initializable {
         queryTF.setText("");
     }
 
+    /**
+     * Calls inventory methods that search the Product list for a Product that contains a search term entered by the user.
+     * The parts table is changed to include only relevant Products
+     * @param actionEvent
+     */
+
     public void getResultsProductHander(ActionEvent actionEvent){
         String q = queryProduct.getText();
 
-        ObservableList<Product> productSearchList = searchProductsList(q);
+        ObservableList<Product> productSearchList = Inventory.lookupProduct(q);
 
         if(productSearchList.size()== 0) {
             try {
-                int productSearchID = Integer.parseInt(q);
-                Product p = getProductByID(productSearchID);
+                int partSearchID = Integer.parseInt(q);
+                Product p = Inventory.lookupProduct(partSearchID);
                 if (p != null) {
                     productSearchList.add(p);
                 }
@@ -187,6 +171,9 @@ public class HelloController implements Initializable {
         queryProduct.setText("");
     }
 
+    /**
+     * Finds and deletes a selected Part from the parts table
+     */
     public void deleteButtonPushed(){
 
         ObservableList<Part> selectedRow;
@@ -199,10 +186,14 @@ public class HelloController implements Initializable {
         alert.setContentText("Are you sure you want to DELETE the selected part?");
         if (alert.showAndWait().get()==ButtonType.OK){
             for (Part part: selectedRow){
-                Inventory.removePart(part);
+                Inventory.deletePart(part);
             }
         }
     }
+
+    /**
+     * finds and deletes a selected product from the products table
+     */
     public void deleteProductButtonPushed(){
 
         ObservableList<Product> selectedRow;
@@ -215,7 +206,17 @@ public class HelloController implements Initializable {
         alert.setContentText("Are you sure you want to DELETE the selected product?");
         if (alert.showAndWait().get()==ButtonType.OK){
             for (Product product: selectedRow){
-                Inventory.removePart(product);
+                if (product.getAllAssociatedParts().size()==0){
+                    Inventory.deleteProduct(product);
+                }
+                else{
+                    Alert error = new Alert(Alert.AlertType.WARNING);
+                    error.setHeaderText("Product has associated parts.");
+                    error.setTitle("Error");
+                    error.setContentText("You cannot delete a product that has associated parts. Please remove associated parts before attempting to delete a product");
+                    error.showAndWait();
+
+                }
             }
         }
 
@@ -223,6 +224,9 @@ public class HelloController implements Initializable {
     }
     Stage stage;
 
+    /**
+     * exits program
+     */
     public void logout(){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("Select \"OK\" to confirm");
@@ -232,45 +236,17 @@ public class HelloController implements Initializable {
             stage = (Stage) scenePane.getScene().getWindow();
             stage.close();
         }
-
-
     }
 
+    /**initialize method, initializes table column values
+     *
+     * @param url
+     * @param resourceBundle
+     */
 
-    private static boolean firstTime = true;
-
-    //add any parts or products to be added to the initial table here
-    private void addInitialData(){
-        if (!firstTime){
-            return;
-        }
-        firstTime = false;
-        Outsourced c = new Outsourced(124,"dog", 12, 12,12,12, "112");
-        Inventory.addPart(c);
-        Outsourced b = new Outsourced(125,"stank", 12, 12,12,12, "Nike");
-        Inventory.addPart(b);
-        Outsourced d = new Outsourced(126,"cat", 12, 12,12,12, "Reebok");
-        Inventory.addPart(d);
-        InHouse f = new InHouse(127,"asdf", 12, 12,12,12, 118);
-        Inventory.addPart(f);
-
-        Product n = new Product(124,"dog", 12, 12,12,12);
-        Inventory.addProduct(n);
-        Product m = new Product(125,"asdff", 12, 12,12,12);
-        Inventory.addProduct(m);
-        Product k = new Product(126,"tttt", 12, 12,12,12);
-        Inventory.addProduct(k);
-        Product l = new Product(127,"rat", 12, 12,12,12);
-        Inventory.addProduct(l);
-
-        Inventory.initialIDSetter(Inventory.getAllProducts().size()+Inventory.getAllParts().size());
-    }
-//int id, String name, double price, int stock, int min, int max)
-    //initialize method adds initial data and initializes table
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        addInitialData();
         partTable.setItems(Inventory.getAllParts());
         id.setCellValueFactory(new PropertyValueFactory<>("id"));
         name.setCellValueFactory(new PropertyValueFactory<>("name"));

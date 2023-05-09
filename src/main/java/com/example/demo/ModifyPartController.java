@@ -1,5 +1,7 @@
+/**
+ * Controller class for the modification of Parts
+ */
 package com.example.demo;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,13 +33,22 @@ public class ModifyPartController implements Initializable {
     @FXML public TextField modifyMin;
     @FXML public TextField modifyMachine;
 
+    /**
+     * A blank Part that will be modified
+     */
     private static Part modifyme;
 
+    /**
+     * copies the selected part into the instance of the part that will be modified on this controller
+     * @param part
+     */
     public static void addToModify(Part part){
         modifyme = part;
     }
 
-    //    This method switches between outsourced part and in house part
+    /**
+     * This method switches between outsourced part and in house part
+     */
     public void modifySourceRadioButtonChanged(){
         if (this.modifyPartInHouse.isSelected()){
             this.modifyPartToggleLabel.setText("Machine ID");
@@ -47,14 +58,22 @@ public class ModifyPartController implements Initializable {
         }
     }
 
+    /**
+     * Back to Main scene
+     */
     public void toMain(ActionEvent event) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("MainMenu.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("MainMenu.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 400);
         Stage window = (Stage) ((Node)event.getSource()).getScene().getWindow();
         window.setScene(scene);
         window.show();
     }
 
+    /**
+     * fills in text data and selects radio buttons based on info from the selected part
+     * @param url
+     * @param resourceBundle
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         modifypartsource = new ToggleGroup();
@@ -78,6 +97,11 @@ public class ModifyPartController implements Initializable {
         }
     }
 
+    /**
+     * saves the changes of the selected part into inventory. Includes input validation
+     * @param actionEvent
+     * @throws IOException
+     */
     public void modifyPartSaveButton(ActionEvent actionEvent) throws IOException {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("Select \"OK\" to confirm");
@@ -86,7 +110,7 @@ public class ModifyPartController implements Initializable {
         if (alert.showAndWait().get()==ButtonType.OK){
             for(Part part: Inventory.getAllParts()) {
                 if(part.getId() == modifyme.getId()){
-                    Inventory.removePart(part);
+                    Inventory.deletePart(part);
 
                     int id = modifyme.getId();
                     String n = modifyName.getText();
